@@ -16,10 +16,10 @@ set_target_properties(liteplayercore PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURC
 add_library(liteplayeradapter SHARED IMPORTED)
 set_target_properties(liteplayeradapter PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libliteplayeradapter.so")
 
-add_library(native-lib SHARED native-lib.cpp)
+add_library(liteplayer-jni SHARED liteplayer-jni.cpp)
 
 # Include libraries needed for native-codec-jni lib
-target_link_libraries(native-lib
+target_link_libraries(liteplayer-jni
         msgutils
         liteplayercore
         liteplayeradapter
