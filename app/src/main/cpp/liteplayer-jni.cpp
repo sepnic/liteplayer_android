@@ -46,6 +46,7 @@
 struct fields_t {
     jfieldID    mContext;
     jmethodID   mPostEvent;
+    JavaVM*     mJavaVM;
     jclass      mClass;
     jobject     mObject;
 };
@@ -83,11 +84,18 @@ static void setLiteplayer(JNIEnv* env, jobject thiz, liteplayer_handle_t player)
 static int Liteplayer_native_stateCallback(enum liteplayer_state state, int errcode, void *priv)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_stateCallback: state=%d, errcode=%d", state, errcode);
-    // todo
+    JavaVM *javaVM = fields.mJavaVM;
+    JNIEnv *env;
+    jint res = javaVM->GetEnv((void**) &env, JNI_VERSION_1_6);
+    if (res != JNI_OK) {
+        OS_LOGE(TAG, "ERROR: GetEnv failed");
+        return -1;
+    }
+    env->CallStaticVoidMethod(fields.mClass, fields.mPostEvent, fields.mObject, state, errcode);
     return 0;
 }
 
-static void Liteplayer_native_create(JNIEnv* env, jobject thiz)
+static void Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_this)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_create");
 
@@ -101,12 +109,25 @@ static void Liteplayer_native_create(JNIEnv* env, jobject thiz)
     if (fields.mContext == NULL) {
         return;
     }
-    //fields.mPostEvent = env->GetStaticMethodID(clazz, "postEventFromNative", "(II)V");
-    //if (fields.mPostEvent == NULL) {
-    //    OS_LOGE(TAG, "ERROR: Get postEvent mothod failed");
-    //    return;
-    //}
+    fields.mPostEvent = env->GetStaticMethodID(clazz, "postEventFromNative", "(Ljava/lang/Object;II)V");
+    if (fields.mPostEvent == NULL) {
+        OS_LOGE(TAG, "ERROR: Get postEvent mothod failed");
+        return;
+    }
     env->DeleteLocalRef(clazz);
+
+    // Hold onto Liteplayer class for use in calling the static method
+    // that posts events to the application thread.
+    clazz = env->GetObjectClass(thiz);
+    if (clazz == NULL) {
+        OS_LOGE(TAG, "Can't find %s", JAVA_CLASS_NAME);
+        jniThrowException(env, "java/lang/Exception", NULL);
+        return;
+    }
+    fields.mClass = (jclass)env->NewGlobalRef(clazz);
+    // We use a weak reference so the Liteplayer object can be garbage collected.
+    // The reference is only used as a proxy for callbacks.
+    fields.mObject  = env->NewGlobalRef(weak_this);
 
     liteplayer_handle_t p = liteplayer_create();
     if (p == NULL) {
@@ -284,7 +305,7 @@ static jint Liteplayer_native_getCurrentPosition(JNIEnv *env, jobject thiz)
     }
     int msec = 0;
     liteplayer_get_position(p, &msec);
-    OS_LOGD(TAG, "@@@ getCurrentPosition: %d (msec)", msec);
+    OS_LOGD(TAG, "@@@ liteplayer_get_position: %d (msec)", msec);
     return (jint)msec;
 }
 
@@ -298,7 +319,7 @@ static jint Liteplayer_native_getDuration(JNIEnv *env, jobject thiz)
     }
     int msec = 0;
     liteplayer_get_duration(p, &msec);
-    OS_LOGD(TAG, "@@@ getDuration: %d (msec)", msec);
+    OS_LOGD(TAG, "@@@ liteplayer_get_duration: %d (msec)", msec);
     return (jint)msec;
 }
 
@@ -312,6 +333,12 @@ static void Liteplayer_native_destroy(JNIEnv *env, jobject thiz)
     }
     setLiteplayer(env, thiz, 0);
     liteplayer_destroy(p);
+
+    // remove global references
+    env->DeleteGlobalRef(fields.mObject);
+    env->DeleteGlobalRef(fields.mClass);
+    fields.mObject = NULL;
+    fields.mClass = NULL;
 }
 
 static jstring native_stringFromJNI(JNIEnv* env, jobject) {
@@ -320,7 +347,7 @@ static jstring native_stringFromJNI(JNIEnv* env, jobject) {
 }
 
 static JNINativeMethod gMethods[] = {
-        {"native_create", "()V", (void *)Liteplayer_native_create},
+        {"native_create", "(Ljava/lang/Object;)V", (void *)Liteplayer_native_create},
         {"native_setDataSource", "(Ljava/lang/String;)V", (void *)Liteplayer_native_setDataSource},
         {"native_prepareAsync", "()V", (void *)Liteplayer_native_prepareAsync},
         {"native_start", "()V", (void *)Liteplayer_native_start},
@@ -353,16 +380,17 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     jint result = -1;
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
-        OS_LOGE(TAG, "ERROR: GetEnv failed\n");
+        OS_LOGE(TAG, "ERROR: GetEnv failed");
         goto bail;
     }
     assert(env != NULL);
 
     if (registerNativeMethods(env, JAVA_CLASS_NAME, gMethods, NELEM(gMethods)) != JNI_TRUE) {
-        OS_LOGE(TAG, "ERROR: registerNativeMethods failed\n");
+        OS_LOGE(TAG, "ERROR: registerNativeMethods failed");
         goto bail;
     }
 
+    fields.mJavaVM = vm;
     /* success -- return valid version number */
     result = JNI_VERSION_1_6;
 
