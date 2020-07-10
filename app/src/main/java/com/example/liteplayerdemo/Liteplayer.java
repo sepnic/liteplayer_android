@@ -53,7 +53,7 @@ public class Liteplayer extends Activity {
 
         // Example of a call to a native method
         TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+        tv.setText("Liteplayer demo");
     }
 
     /** Called when the activity is about to be destroyed. */
@@ -163,7 +163,6 @@ public class Liteplayer extends Activity {
     public native int native_getCurrentPosition();
     public native int native_getDuration();
     public native void native_destroy();
-    public native String stringFromJNI();
 
     // Used to load the 'native-lib' library on application startup.
     static {

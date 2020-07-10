@@ -341,11 +341,6 @@ static void Liteplayer_native_destroy(JNIEnv *env, jobject thiz)
     fields.mClass = NULL;
 }
 
-static jstring native_stringFromJNI(JNIEnv* env, jobject) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
-}
-
 static JNINativeMethod gMethods[] = {
         {"native_create", "(Ljava/lang/Object;)V", (void *)Liteplayer_native_create},
         {"native_setDataSource", "(Ljava/lang/String;)V", (void *)Liteplayer_native_setDataSource},
@@ -359,7 +354,6 @@ static JNINativeMethod gMethods[] = {
         {"native_getCurrentPosition", "()I", (void *)Liteplayer_native_getCurrentPosition},
         {"native_getDuration", "()I", (void *)Liteplayer_native_getDuration},
         {"native_destroy", "()V", (void *)Liteplayer_native_destroy},
-        {"stringFromJNI", "()Ljava/lang/String;", (void *)native_stringFromJNI},
 };
 
 static int registerNativeMethods(JNIEnv* env, const char* className,JNINativeMethod* getMethods,int methodsNum){
