@@ -22,6 +22,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        android.libraryVariants.all { variant ->
+            variant.outputs.all {
+                outputFileName = "Liteplayer.aar"
+            }
+        }
     }
     externalNativeBuild {
         cmake {

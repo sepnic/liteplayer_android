@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
 
     Liteplayer.OnSeekCompletedListener mSeekCompletedListener = new Liteplayer.OnSeekCompletedListener() {
         public void onSeekCompleted(Liteplayer p) {
-            if (mPaused == false)
+            if (!mPaused)
                 p.start();
         }
     };
