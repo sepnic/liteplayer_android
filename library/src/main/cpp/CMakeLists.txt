@@ -7,14 +7,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -UNDEBUG -DOS_A
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/include/liteplayer)
 
+set(LIBS_DIR "${CMAKE_SOURCE_DIR}/../../../libs")
+
 add_library(msgutils SHARED IMPORTED)
-set_target_properties(msgutils PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libmsgutils.so")
+set_target_properties(msgutils PROPERTIES IMPORTED_LOCATION "${LIBS_DIR}/${ANDROID_ABI}/libmsgutils.so")
 
 add_library(liteplayercore SHARED IMPORTED)
-set_target_properties(liteplayercore PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libliteplayercore.so")
+set_target_properties(liteplayercore PROPERTIES IMPORTED_LOCATION "${LIBS_DIR}/${ANDROID_ABI}/libliteplayercore.so")
 
 add_library(liteplayeradapter SHARED IMPORTED)
-set_target_properties(liteplayeradapter PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libliteplayeradapter.so")
+set_target_properties(liteplayeradapter PROPERTIES IMPORTED_LOCATION "${LIBS_DIR}/${ANDROID_ABI}/libliteplayeradapter.so")
 
 add_library(liteplayer-jni SHARED liteplayer-jni.cpp)
 

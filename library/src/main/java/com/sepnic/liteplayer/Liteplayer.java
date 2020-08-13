@@ -1,4 +1,4 @@
-package com.example.liteplayerdemo;
+package com.sepnic.liteplayer;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -41,8 +41,7 @@ public class Liteplayer {
         native_create(new WeakReference<Liteplayer>(this));
     }
 
-    private class EventHandler extends Handler
-    {
+    private class EventHandler extends Handler {
         private Liteplayer mLiteplayer;
 
         public EventHandler(Liteplayer p, Looper looper) {
@@ -183,119 +182,101 @@ public class Liteplayer {
         p.mAudioTrack = null;
     }
 
-    public interface OnIdleListener
-    {
+    public interface OnIdleListener {
         /**
          * Called when the player is idle.
          */
         void onIdle(Liteplayer p);
     }
-    public void setOnIdleListener(OnIdleListener listener)
-    {
+    public void setOnIdleListener(OnIdleListener listener) {
         mOnIdleListener = listener;
     }
     private OnIdleListener mOnIdleListener;
 
-    public interface OnPreparedListener
-    {
+    public interface OnPreparedListener {
         /**
          * Called when the media file is ready for playback.
          */
         void onPrepared(Liteplayer p);
     }
-    public void setOnPreparedListener(OnPreparedListener listener)
-    {
+    public void setOnPreparedListener(OnPreparedListener listener) {
         mOnPreparedListener = listener;
     }
     private OnPreparedListener mOnPreparedListener;
 
-    public interface OnStartedListener
-    {
+    public interface OnStartedListener {
         /**
          * Called when the player is started.
          */
         void onStarted(Liteplayer p);
     }
-    public void setOnStartedListener(OnStartedListener listener)
-    {
+    public void setOnStartedListener(OnStartedListener listener) {
         mOnStartedListener = listener;
     }
     private OnStartedListener mOnStartedListener;
 
-    public interface OnPausedListener
-    {
+    public interface OnPausedListener {
         /**
          * Called when the player is paused.
          */
         void onPaused(Liteplayer p);
     }
-    public void setOnPausedListener(OnPausedListener listener)
-    {
+    public void setOnPausedListener(OnPausedListener listener) {
         mOnPausedListener = listener;
     }
     private OnPausedListener mOnPausedListener;
 
-    public interface OnSeekCompletedListener
-    {
+    public interface OnSeekCompletedListener {
         /**
          * Called when the player is seek completed.
          */
         void onSeekCompleted(Liteplayer p);
     }
-    public void setOnSeekCompletedListener(OnSeekCompletedListener listener)
-    {
+    public void setOnSeekCompletedListener(OnSeekCompletedListener listener) {
         mOnSeekCompletedListener = listener;
     }
     private OnSeekCompletedListener mOnSeekCompletedListener;
 
-    public interface OnNearlyCompletedListener
-    {
+    public interface OnNearlyCompletedListener {
         /**
          * Called when the player is nearly completed.
          */
         void onNearlyCompleted(Liteplayer p);
     }
-    public void setOnNearlyCompletedListener(OnNearlyCompletedListener listener)
-    {
+    public void setOnNearlyCompletedListener(OnNearlyCompletedListener listener) {
         mOnNearlyCompletedListener = listener;
     }
     private OnNearlyCompletedListener mOnNearlyCompletedListener;
 
-    public interface OnCompletedListener
-    {
+    public interface OnCompletedListener {
         /**
          * Called when the player reached the end of the file.
          */
         void onCompleted(Liteplayer p);
     }
-    public void setOnCompletedListener(OnCompletedListener listener)
-    {
+    public void setOnCompletedListener(OnCompletedListener listener) {
         mOnCompletedListener = listener;
     }
     private OnCompletedListener mOnCompletedListener;
 
-    public interface OnStoppedListener
-    {
+    public interface OnStoppedListener {
         /**
          * Called when the player is stopped.
          */
         void onStopped(Liteplayer p);
     }
-    public void setOnStoppedListener(OnStoppedListener listener)
-    {
+    public void setOnStoppedListener(OnStoppedListener listener) {
         mOnStoppedListener = listener;
     }
     private OnStoppedListener mOnStoppedListener;
 
-    public interface OnErrorListener
-    {
+    public interface OnErrorListener {
         /**
          * Called when the player encounter error.
          */
         void onError(Liteplayer p, int what, int extra);
     }
-    public void setOnErrorListener(OnErrorListener listener)
-    {
+    public void setOnErrorListener(OnErrorListener listener) {
         mOnErrorListener = listener;
     }
     private OnErrorListener mOnErrorListener;

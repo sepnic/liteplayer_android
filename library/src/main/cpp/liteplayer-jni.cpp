@@ -41,7 +41,7 @@
 #include "liteplayer/adapter/opensles_wrapper.h"
 
 #define TAG "NativeLiteplayer"
-#define JAVA_CLASS_NAME "com/example/liteplayerdemo/Liteplayer"
+#define JAVA_CLASS_NAME "com/sepnic/liteplayer/Liteplayer"
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
 struct fields_t {

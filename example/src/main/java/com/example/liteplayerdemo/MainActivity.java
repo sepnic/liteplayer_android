@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.sepnic.liteplayer.Liteplayer;
+
 public class MainActivity extends Activity {
     private final static String TAG = "LitelayerDemo";
     private Liteplayer mLiteplayer;
