@@ -41,6 +41,20 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    @Override
+    protected void onPause() {
+        if (mStarted && !mPaused)
+            mLiteplayer.pause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mStarted && mPaused)
+            mLiteplayer.resume();
+    }
+
     Liteplayer.OnIdleListener mIdleListener = new Liteplayer.OnIdleListener() {
         public void onIdle(Liteplayer p) {
             mStarted = false;
