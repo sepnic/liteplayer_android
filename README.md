@@ -1,4 +1,4 @@
-Liteplayer 是一个为嵌入式平台设计低开销低延时的音频播放器，具有如下优点：
+Liteplayer 是一个为嵌入式平台设计的低开销低延时的音频播放器，具有如下优点：
 1. 支持 MP3、AAC、M4A、WAV、FLAC、OPUS 格式，支持本地文件、HTTP/HTTPS/HLS、本地播放列表，接口和状态机与 Android MediaPlayer 一致
 2. 极低的系统开销，2-3 个线程，低至 80KB 堆内存占用，可保证在 192MHz 主频 + 448KB 内存的系统上运行顺畅；高配置平台上可配置更大的缓冲区以取得更好的播放体验
 3. 高度的移植性，纯 C 语言 C99 标准，已运行在 Linux、Android、iOS、MacOS、FreeRTOS、AliOS-Things 上；如果其平台不支持 POSIX 接口规范，则实现 Thread、Memory、Time 相关的少量 OSAL 接口也可接入
@@ -20,8 +20,8 @@ Liteplayer 已运行在千万级别的设备上，包括 Android、iOS、Linux�
 - 文件读写、网络访问、音频设备输出的抽象接口，默认适配了 "文件读写-标准文件系统"、 "网络访问-httpclient"、"音频设备输出-tinyalsa/OpenSLES/AudioTrack"
 - [https://github.com/sepnic/liteplayer_android/blob/master/library/jniLibs/include/liteplayer/liteplayer_adapter.h](https://github.com/sepnic/liteplayer_android/blob/master/library/jniLibs/include/liteplayer/liteplayer_adapter.h)
 
-**OSAL适配层**：
-- Thread、Memory、Time 等操作系统的抽象接口，如果系统支持 POSIX 接口规范，则直接使用即可
+**OSAL 适配层**：
+- Thread、Memory、Time 等操作系统相关的抽象接口，如果系统已支持 POSIX 接口规范，则不用修改直接使用即可
 - [https://github.com/sepnic/liteplayer_android/tree/master/library/jniLibs/include/msgutils](https://github.com/sepnic/liteplayer_android/tree/master/library/jniLibs/include/msgutils)
 - [https://github.com/sepnic/msgutils](https://github.com/sepnic/msgutils)
 
