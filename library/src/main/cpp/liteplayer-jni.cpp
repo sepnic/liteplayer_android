@@ -75,7 +75,7 @@ static void jniThrowException(JNIEnv* env, const char* className, const char* ms
 static liteplayer_handle_t getLiteplayer(JNIEnv* env, jobject thiz)
 {
     msgutils::Mutex::Autolock l(sLock);
-    liteplayer_handle_t p = (liteplayer_handle_t)env->GetLongField(thiz, sFields.mContext);
+    auto p = (liteplayer_handle_t)env->GetLongField(thiz, sFields.mContext);
     return p;
 }
 
@@ -85,36 +85,36 @@ static void setLiteplayer(JNIEnv* env, jobject thiz, liteplayer_handle_t player)
     env->SetLongField(thiz, sFields.mContext, (jlong)player);
 }
 
-sink_handle_t audiotrack_wrapper_open(int samplerate, int channels, void *sink_priv)
+static sink_handle_t audiotrack_wrapper_open(int samplerate, int channels, void *sink_priv)
 {
     OS_LOGD(TAG, "@@@ Opening AudioTrack: samplerate=%d, channels=%d", samplerate, channels);
     JNIEnv *env;
-    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", NULL };
+    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", nullptr };
     jint res = sFields.mJavaVM->AttachCurrentThread(&env, &args);
     if (res != JNI_OK) {
         OS_LOGE(TAG, "Failed to AttachCurrentThread, errcode=%d", res);
-        return NULL;
+        return nullptr;
     }
     res = env->CallStaticIntMethod(sFields.mClass, sFields.mOpenTrack, sFields.mObject, samplerate, channels);
     sFields.mJavaVM->DetachCurrentThread();
-    return res == 0 ? &sFields : NULL;
+    return res == 0 ? (sink_handle_t)&sFields : nullptr;
 }
 
-int audiotrack_wrapper_write(sink_handle_t handle, char *buffer, int size)
+static int audiotrack_wrapper_write(sink_handle_t handle, char *buffer, int size)
 {
     OS_LOGV(TAG, "@@@ Writing AudioTrack: buffer=%p, size=%d", buffer, size);
     JNIEnv *env;
-    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", NULL };
+    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", nullptr };
     jint res = sFields.mJavaVM->AttachCurrentThread(&env, &args);
     if (res != JNI_OK) {
         OS_LOGE(TAG, "Failed to AttachCurrentThread, errcode=%d", res);
         return -1;
     }
     jbyteArray sampleArray = env->NewByteArray(size);
-    if (sampleArray == NULL) {
+    if (sampleArray == nullptr) {
         return -1;
     }
-    jbyte *sampleByte = env->GetByteArrayElements(sampleArray, NULL);
+    jbyte *sampleByte = env->GetByteArrayElements(sampleArray, nullptr);
     memcpy(sampleByte, buffer, size);
     env->ReleaseByteArrayElements(sampleArray, sampleByte, 0);
     res = env->CallStaticIntMethod(sFields.mClass, sFields.mWriteTrack, sFields.mObject, sampleArray, size);
@@ -123,11 +123,11 @@ int audiotrack_wrapper_write(sink_handle_t handle, char *buffer, int size)
     return size;
 }
 
-void audiotrack_wrapper_close(sink_handle_t handle)
+static void audiotrack_wrapper_close(sink_handle_t handle)
 {
     OS_LOGD(TAG, "@@@ closing AudioTrack");
     JNIEnv *env;
-    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", NULL };
+    JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerAudioTrack", nullptr };
     jint res = sFields.mJavaVM->AttachCurrentThread(&env, &args);
     if (res != JNI_OK) {
         OS_LOGE(TAG, "Failed to AttachCurrentThread, errcode=%d", res);
@@ -144,7 +144,7 @@ static int Liteplayer_native_stateCallback(enum liteplayer_state state, int errc
     jint res = sFields.mJavaVM->GetEnv((void**) &env, JNI_VERSION_1_6);
     jboolean attached = JNI_FALSE;
     if (res != JNI_OK) {
-        JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerStateCallback", NULL };
+        JavaVMAttachArgs args = { JNI_VERSION_1_6, "LiteplayerStateCallback", nullptr };
         res = sFields.mJavaVM->AttachCurrentThread(&env, &args);
         if (res != JNI_OK) {
             OS_LOGE(TAG, "Failed to AttachCurrentThread, errcode=%d", res);
@@ -166,32 +166,32 @@ static jint Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_thi
 
     jclass clazz;
     clazz = env->FindClass(JAVA_CLASS_NAME);
-    if (clazz == NULL) {
+    if (clazz == nullptr) {
         OS_LOGE(TAG, "Failed to find class: %s", JAVA_CLASS_NAME);
         return -1;
     }
     sFields.mContext = env->GetFieldID(clazz, "mNativeContext", "J");
-    if (sFields.mContext == NULL) {
+    if (sFields.mContext == nullptr) {
         OS_LOGE(TAG, "Failed to get native context");
         return -1;
     }
     sFields.mPostEvent = env->GetStaticMethodID(clazz, "postEventFromNative", "(Ljava/lang/Object;II)V");
-    if (sFields.mPostEvent == NULL) {
+    if (sFields.mPostEvent == nullptr) {
         OS_LOGE(TAG, "Failed to get postEventFromNative mothod");
         return -1;
     }
     sFields.mOpenTrack = env->GetStaticMethodID(clazz, "openAudioTrackFromNative", "(Ljava/lang/Object;II)I");
-    if (sFields.mOpenTrack == NULL) {
+    if (sFields.mOpenTrack == nullptr) {
         OS_LOGE(TAG, "Failed to get openAudioTrackFromNative mothod");
         return -1;
     }
     sFields.mWriteTrack = env->GetStaticMethodID(clazz, "writeAudioTrackFromNative", "(Ljava/lang/Object;[BI)I");
-    if (sFields.mWriteTrack == NULL) {
+    if (sFields.mWriteTrack == nullptr) {
         OS_LOGE(TAG, "Failed to get writeAudioTrackFromNative mothod");
         return -1;
     }
     sFields.mCloseTrack = env->GetStaticMethodID(clazz, "closeAudioTrackFromNative", "(Ljava/lang/Object;)V");
-    if (sFields.mCloseTrack == NULL) {
+    if (sFields.mCloseTrack == nullptr) {
         OS_LOGE(TAG, "Failed to get closeAudioTrackFromNative mothod");
         return -1;
     }
@@ -200,9 +200,9 @@ static jint Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_thi
     // Hold onto Liteplayer class for use in calling the static method
     // that posts events to the application thread.
     clazz = env->GetObjectClass(thiz);
-    if (clazz == NULL) {
+    if (clazz == nullptr) {
         OS_LOGE(TAG, "Failed to find class: %s", JAVA_CLASS_NAME);
-        jniThrowException(env, "java/lang/Exception", NULL);
+        jniThrowException(env, "java/lang/Exception", nullptr);
         return -1;
     }
     sFields.mClass = (jclass)env->NewGlobalRef(clazz);
@@ -211,14 +211,14 @@ static jint Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_thi
     sFields.mObject  = env->NewGlobalRef(weak_this);
 
     liteplayer_handle_t p = liteplayer_create();
-    if (p == NULL) {
+    if (p == nullptr) {
         return -1;
     }
     // Register state listener, todo: notify java objest
-    liteplayer_register_state_listener(p, Liteplayer_native_stateCallback, NULL);
+    liteplayer_register_state_listener(p, Liteplayer_native_stateCallback, nullptr);
     // Register sink adapter
     struct sink_wrapper sink_ops = {
-            .sink_priv = NULL,
+            .sink_priv = nullptr,
             .open = audiotrack_wrapper_open,
             .write = audiotrack_wrapper_write,
             .close = audiotrack_wrapper_close,
@@ -226,7 +226,7 @@ static jint Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_thi
     liteplayer_register_sink_wrapper(p, &sink_ops);
     // Register http adapter
     struct file_wrapper file_ops = {
-            .file_priv = NULL,
+            .file_priv = nullptr,
             .open = fatfs_wrapper_open,
             .read = fatfs_wrapper_read,
             .filesize = fatfs_wrapper_filesize,
@@ -236,7 +236,7 @@ static jint Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_thi
     liteplayer_register_file_wrapper(p, &file_ops);
     // Register file adapter
     struct http_wrapper http_ops = {
-            .http_priv = NULL,
+            .http_priv = nullptr,
             .open = httpclient_wrapper_open,
             .read = httpclient_wrapper_read,
             .filesize = httpclient_wrapper_filesize,
@@ -254,16 +254,16 @@ static jint Liteplayer_native_setDataSource(JNIEnv *env, jobject thiz, jstring p
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_setDataSource");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
-    if (path == NULL) {
-        jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
+    if (path == nullptr) {
+        jniThrowException(env, "java/lang/IllegalArgumentException", nullptr);
         return -1;
     }
-    const char *tmp = env->GetStringUTFChars(path, NULL);
-    if (tmp == NULL) {
+    const char *tmp = env->GetStringUTFChars(path, nullptr);
+    if (tmp == nullptr) {
         jniThrowException(env, "java/lang/RuntimeException", "Out of memory");
         return -1;
     }
@@ -276,8 +276,8 @@ static jint Liteplayer_native_prepareAsync(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_prepareAsync");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_prepare_async(p);
@@ -287,8 +287,8 @@ static jint Liteplayer_native_start(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_start");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_start(p);
@@ -298,8 +298,8 @@ static jint Liteplayer_native_pause(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_pause");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_pause(p);
@@ -309,8 +309,8 @@ static jint Liteplayer_native_resume(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_resume");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_resume(p);
@@ -320,8 +320,8 @@ static jint Liteplayer_native_seekTo(JNIEnv *env, jobject thiz, jint msec)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_seekTo");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_seek(p, msec);
@@ -331,8 +331,8 @@ static jint Liteplayer_native_stop(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_stop");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_stop(p);
@@ -342,8 +342,8 @@ static jint Liteplayer_native_reset(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_reset");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return -1;
     }
     return (jint) liteplayer_reset(p);
@@ -353,8 +353,8 @@ static jint Liteplayer_native_getCurrentPosition(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_getCurrentPosition");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return 0;
     }
     int msec = 0;
@@ -366,8 +366,8 @@ static jint Liteplayer_native_getDuration(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_getCurrentPosition");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return 0;
     }
     int msec = 0;
@@ -379,8 +379,8 @@ static void Liteplayer_native_destroy(JNIEnv *env, jobject thiz)
 {
     OS_LOGD(TAG, "@@@ Liteplayer_native_destroy");
     liteplayer_handle_t p = getLiteplayer(env, thiz);
-    if (p == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+    if (p == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException", nullptr);
         return;
     }
     setLiteplayer(env, thiz, 0);
@@ -389,8 +389,8 @@ static void Liteplayer_native_destroy(JNIEnv *env, jobject thiz)
     // remove global references
     env->DeleteGlobalRef(sFields.mObject);
     env->DeleteGlobalRef(sFields.mClass);
-    sFields.mObject = NULL;
-    sFields.mClass = NULL;
+    sFields.mObject = nullptr;
+    sFields.mClass = nullptr;
 }
 
 static JNINativeMethod gMethods[] = {
@@ -411,7 +411,7 @@ static JNINativeMethod gMethods[] = {
 static int registerNativeMethods(JNIEnv* env, const char* className,JNINativeMethod* getMethods,int methodsNum){
     jclass clazz;
     clazz = env->FindClass(className);
-    if(clazz == NULL){
+    if(clazz == nullptr){
         return JNI_FALSE;
     }
     if(env->RegisterNatives(clazz,getMethods,methodsNum) < 0){
@@ -422,14 +422,14 @@ static int registerNativeMethods(JNIEnv* env, const char* className,JNINativeMet
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-    JNIEnv* env = NULL;
+    JNIEnv* env = nullptr;
     jint result = -1;
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         OS_LOGE(TAG, "Failed to get env");
         goto bail;
     }
-    assert(env != NULL);
+    assert(env != nullptr);
 
     if (registerNativeMethods(env, JAVA_CLASS_NAME, gMethods, NELEM(gMethods)) != JNI_TRUE) {
         OS_LOGE(TAG, "Failed to register native methods");
