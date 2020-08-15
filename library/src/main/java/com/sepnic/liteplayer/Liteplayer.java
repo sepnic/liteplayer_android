@@ -24,7 +24,7 @@ public class Liteplayer {
     private static final int LITEPLAYER_ERROR           = 0x0A;
 
     private final static String TAG = "Litelayer";
-    private long mNativeContext; // accessed by native methods
+    private long mPlayerHandle;
     private EventHandler mEventHandler;
     private HandlerThread mHandlerThread;
     private AudioTrack mAudioTrack;
@@ -38,7 +38,7 @@ public class Liteplayer {
             looper = mHandlerThread.getLooper();
         }
         mEventHandler = new EventHandler(this, looper);
-        native_create(new WeakReference<Liteplayer>(this));
+        mPlayerHandle = native_create(new WeakReference<Liteplayer>(this));
     }
 
     private class EventHandler extends Handler {
@@ -51,7 +51,7 @@ public class Liteplayer {
 
         @Override
         public void handleMessage(Message msg) {
-            if (mLiteplayer.mNativeContext == 0) {
+            if (mLiteplayer.mPlayerHandle == 0) {
                 Log.w(TAG, "liteplayer went away with unhandled events");
                 return;
             }
@@ -282,7 +282,8 @@ public class Liteplayer {
     private OnErrorListener mOnErrorListener;
 
     public void release() throws IllegalStateException {
-        native_destroy();
+        native_destroy(mPlayerHandle);
+        mPlayerHandle = 0;
         if (mHandlerThread != null) {
             mHandlerThread.quitSafely();
         }
@@ -297,61 +298,61 @@ public class Liteplayer {
     }
 
     public int setDataSource(String path) throws IllegalStateException, IllegalArgumentException {
-        return native_setDataSource(path);
+        return native_setDataSource(mPlayerHandle, path);
     }
 
     public int prepareAsync() throws IllegalStateException {
-        return native_prepareAsync();
+        return native_prepareAsync(mPlayerHandle);
     }
 
     public int start() throws IllegalStateException {
-        return native_start();
+        return native_start(mPlayerHandle);
     }
 
     public int pause() throws IllegalStateException {
-        return native_pause();
+        return native_pause(mPlayerHandle);
     }
 
     public int resume() throws IllegalStateException {
-        return native_resume();
+        return native_resume(mPlayerHandle);
     }
 
     public int seekTo(int msec) throws IllegalStateException {
-        return native_seekTo(msec);
+        return native_seekTo(mPlayerHandle, msec);
     }
 
     public int stop() throws IllegalStateException {
-        return native_stop();
+        return native_stop(mPlayerHandle);
     }
 
     public int reset() throws IllegalStateException {
-        return native_reset();
+        return native_reset(mPlayerHandle);
     }
 
     public int getCurrentPosition() throws IllegalStateException {
-        return native_getCurrentPosition();
+        return native_getCurrentPosition(mPlayerHandle);
     }
 
     public int getDuration() throws IllegalStateException {
-        return native_getDuration();
+        return native_getDuration(mPlayerHandle);
     }
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    private native int native_create(Object liteplayer_this);
-    private native void native_destroy() throws IllegalStateException;
-    private native int native_setDataSource(String path) throws IllegalStateException, IllegalArgumentException;
-    private native int native_prepareAsync() throws IllegalStateException;
-    private native int native_start() throws IllegalStateException;
-    private native int native_pause() throws IllegalStateException;
-    private native int native_resume() throws IllegalStateException;
-    private native int native_seekTo(int msec) throws IllegalStateException;
-    private native int native_stop() throws IllegalStateException;
-    private native int native_reset() throws IllegalStateException;
-    private native int native_getCurrentPosition() throws IllegalStateException;
-    private native int native_getDuration() throws IllegalStateException;
+    private native long native_create(Object liteplayer_this);
+    private native void native_destroy(long handle) throws IllegalStateException;
+    private native int native_setDataSource(long handle, String path) throws IllegalStateException, IllegalArgumentException;
+    private native int native_prepareAsync(long handle) throws IllegalStateException;
+    private native int native_start(long handle) throws IllegalStateException;
+    private native int native_pause(long handle) throws IllegalStateException;
+    private native int native_resume(long handle) throws IllegalStateException;
+    private native int native_seekTo(long handle, int msec) throws IllegalStateException;
+    private native int native_stop(long handle) throws IllegalStateException;
+    private native int native_reset(long handle) throws IllegalStateException;
+    private native int native_getCurrentPosition(long handle) throws IllegalStateException;
+    private native int native_getDuration(long handle) throws IllegalStateException;
 
     // Used to load the 'native-lib' library on application startup.
     static {
