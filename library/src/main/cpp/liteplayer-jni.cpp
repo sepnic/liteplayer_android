@@ -28,12 +28,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string>
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
 
 #include "msgutils/os_logger.h"
-#include "msgutils/Namespace.hpp"
-#include "msgutils/Mutex.hpp"
 #include "liteplayer/liteplayer_main.h"
 #include "liteplayer/liteplayer_adapter.h"
 #include "liteplayer/adapter/fatfs_wrapper.h"
@@ -44,12 +40,16 @@
 #define JAVA_CLASS_NAME "com/sepnic/liteplayer/Liteplayer"
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
+#define ENABLE_OPENSLES
+
 struct liteplayer_priv {
     liteplayer_handle_t mPlayer;
     jmethodID   mPostEvent;
+#if !defined(ENABLE_OPENSLES)
     jmethodID   mOpenTrack;
     jmethodID   mWriteTrack;
     jmethodID   mCloseTrack;
+#endif
     jclass      mClass;
     jobject     mObject;
 };
@@ -71,6 +71,7 @@ static void jniThrowException(JNIEnv *env, const char *className, const char *ms
     env->DeleteLocalRef(clazz);
 }
 
+#if !defined(ENABLE_OPENSLES)
 static sink_handle_t audiotrack_wrapper_open(int samplerate, int channels, void *sink_priv)
 {
     OS_LOGD(TAG, "@@@ Opening AudioTrack: samplerate=%d, channels=%d", samplerate, channels);
@@ -133,6 +134,7 @@ static void audiotrack_wrapper_close(sink_handle_t handle)
 
     sJavaVM->DetachCurrentThread();
 }
+#endif
 
 static int Liteplayer_native_stateCallback(enum liteplayer_state state, int errcode, void *callback_priv)
 {
@@ -178,6 +180,7 @@ static jlong Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_th
         free(priv);
         return (jlong)nullptr;
     }
+#if !defined(ENABLE_OPENSLES)
     priv->mOpenTrack = env->GetStaticMethodID(clazz, "openAudioTrackFromNative", "(Ljava/lang/Object;II)I");
     if (priv->mOpenTrack == nullptr) {
         OS_LOGE(TAG, "Failed to get openAudioTrackFromNative mothod");
@@ -196,6 +199,7 @@ static jlong Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_th
         free(priv);
         return (jlong)nullptr;
     }
+#endif
     env->DeleteLocalRef(clazz);
 
     // Hold onto Liteplayer class for use in calling the static method that posts events to the application thread.
@@ -220,10 +224,17 @@ static jlong Liteplayer_native_create(JNIEnv* env, jobject thiz, jobject weak_th
     liteplayer_register_state_listener(priv->mPlayer, Liteplayer_native_stateCallback, priv);
     // Register sink adapter
     struct sink_wrapper sink_ops = {
+#if !defined(ENABLE_OPENSLES)
             .sink_priv = priv,
             .open = audiotrack_wrapper_open,
             .write = audiotrack_wrapper_write,
             .close = audiotrack_wrapper_close,
+#else
+            .sink_priv = NULL,
+            .open = opensles_wrapper_open,
+            .write = opensles_wrapper_write,
+            .close = opensles_wrapper_close,
+#endif
     };
     liteplayer_register_sink_wrapper(priv->mPlayer, &sink_ops);
     // Register http adapter
