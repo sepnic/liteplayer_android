@@ -28,6 +28,7 @@ public class Liteplayer {
     private EventHandler mEventHandler;
     private HandlerThread mHandlerThread;
     private AudioTrack mAudioTrack;
+    private boolean mTrackTriggered;
 
     public Liteplayer() {
         Looper looper;
@@ -153,30 +154,29 @@ public class Liteplayer {
                 AudioManager.STREAM_MUSIC,
                 sampleRateInHz, channelConfig, audioFormat,
                 bufferSizeInBytes, AudioTrack.MODE_STREAM);
-        p.mAudioTrack.play();
-
         return 0;
     }
 
     private static int writeAudioTrackFromNative(Object liteplayer_ref, byte[] audioData, int sizeInBytes) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
-        if (p == null) {
+        if (p == null || p.mAudioTrack == null) {
             return -1;
         }
-        if (p.mAudioTrack == null) {
-            return -1;
+
+        if (!p.mTrackTriggered) {
+            p.mAudioTrack.play();
+            p.mTrackTriggered = true;
         }
         return p.mAudioTrack.write(audioData, 0, sizeInBytes);
     }
 
     private static void closeAudioTrackFromNative(Object liteplayer_ref) {
         Liteplayer p = (Liteplayer)((WeakReference)liteplayer_ref).get();
-        if (p == null) {
+        if (p == null || p.mAudioTrack == null) {
             return;
         }
-        if (p.mAudioTrack == null) {
-            return;
-        }
+
+        p.mTrackTriggered = false;
         p.mAudioTrack.stop();
         p.mAudioTrack.release();
         p.mAudioTrack = null;
