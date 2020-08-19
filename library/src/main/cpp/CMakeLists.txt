@@ -12,18 +12,18 @@ include_directories(${JNILIBS_DIR}/include/liteplayer)
 add_library(msgutils SHARED IMPORTED)
 set_target_properties(msgutils PROPERTIES IMPORTED_LOCATION "${JNILIBS_DIR}/libs/${ANDROID_ABI}/libmsgutils.so")
 
-add_library(liteplayercore SHARED IMPORTED)
-set_target_properties(liteplayercore PROPERTIES IMPORTED_LOCATION "${JNILIBS_DIR}/libs/${ANDROID_ABI}/libliteplayercore.so")
+add_library(liteplayer_core SHARED IMPORTED)
+set_target_properties(liteplayer_core PROPERTIES IMPORTED_LOCATION "${JNILIBS_DIR}/libs/${ANDROID_ABI}/libliteplayer_core.so")
 
-add_library(liteplayeradapter SHARED IMPORTED)
-set_target_properties(liteplayeradapter PROPERTIES IMPORTED_LOCATION "${JNILIBS_DIR}/libs/${ANDROID_ABI}/libliteplayeradapter.so")
+add_library(liteplayer_adapter SHARED IMPORTED)
+set_target_properties(liteplayer_adapter PROPERTIES IMPORTED_LOCATION "${JNILIBS_DIR}/libs/${ANDROID_ABI}/libliteplayer_adapter.so")
 
 add_library(liteplayer-jni SHARED liteplayer-jni.cpp)
 
 # Include libraries needed for native-codec-jni lib
 target_link_libraries(liteplayer-jni
         msgutils
-        liteplayercore
-        liteplayeradapter
+        liteplayer_core
+        liteplayer_adapter
         android
         log)

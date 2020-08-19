@@ -44,7 +44,6 @@ public class MainActivity extends Activity {
     private void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
@@ -80,9 +79,9 @@ public class MainActivity extends Activity {
 
     public void onStartClick(View view) {
         if (mStatus == LITEPLAYER_IDLE) {
-            //String music_url = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp3";
-            String music_url = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
-            mLiteplayer.setDataSource(music_url);
+            //String music = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp3";
+            String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
+            mLiteplayer.setDataSource(music);
             mLiteplayer.prepareAsync();
         } else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
             mLiteplayer.resume();
