@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2018-2020 luoyun <sysu.zqlong@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-/*
- * Copyright (c) 2018-2020 LUOYUN <sysu.zqlong@gmail.com>
- */
-
 #ifndef __MSGUTILS_THREAD_BASE_H__
 #define __MSGUTILS_THREAD_BASE_H__
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <string>
-#include "os_thread.h"
-#include "Mutex.hpp"
-#include "Namespace.hpp"
+#include "cutils/os_thread.h"
+#include "Mutex.h"
+#include "Namespace.h"
 
 MSGUTILS_NAMESPACE_BEGIN
 

@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string>
 
-#include "msgutils/os_logger.h"
+#include "msgutils/cutils/os_logger.h"
 #include "liteplayer/liteplayer_main.h"
 #include "liteplayer/liteplayer_adapter.h"
 #include "liteplayer/adapter/fatfs_wrapper.h"
