@@ -12,6 +12,11 @@ import androidx.core.app.ActivityCompat;
 
 import com.sepnic.liteplayer.Liteplayer;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class MainActivity extends Activity {
     private final static String TAG = "LitelayerDemo";
     private Liteplayer mLiteplayer;
@@ -32,7 +37,7 @@ public class MainActivity extends Activity {
 
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
+    private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -48,6 +53,43 @@ public class MainActivity extends Activity {
             // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
         }
+    }
+
+    private String getCacheMusicFile(String assetFile) {
+        try {
+            File cacheDir = getCacheDir();
+            if (!cacheDir.exists()) {
+                boolean res = cacheDir.mkdirs();
+                if (!res) {
+                    return "";
+                }
+            }
+            File outFile = new File(cacheDir, assetFile);
+            if (!outFile.exists()) {
+                boolean res = outFile.createNewFile();
+                if (!res) {
+                    return "";
+                }
+            } else {
+                if (outFile.length() > 0) {
+                    return outFile.getAbsolutePath();
+                }
+            }
+            InputStream is = getAssets().open(assetFile);
+            FileOutputStream fos = new FileOutputStream(outFile);
+            byte[] buffer = new byte[1024];
+            int byteRead = 0;
+            while ((byteRead = is.read(buffer)) > 0) {
+                fos.write(buffer, 0, byteRead);
+            }
+            fos.flush();
+            is.close();
+            fos.close();
+            return outFile.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
@@ -80,7 +122,9 @@ public class MainActivity extends Activity {
     public void onStartClick(View view) {
         if (mStatus == LITEPLAYER_IDLE) {
             //String music = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp3";
-            String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
+            //String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
+            String music = getCacheMusicFile("test.m4a");
+
             mLiteplayer.setDataSource(music);
             mLiteplayer.prepareAsync();
         } else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
