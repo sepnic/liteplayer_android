@@ -40,7 +40,7 @@
 #define JAVA_CLASS_NAME "com/sepnic/liteplayer/Liteplayer"
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
-#define ENABLE_OPENSLES
+//#define ENABLE_OPENSLES
 
 struct liteplayer_priv {
     liteplayer_handle_t mPlayer;

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 import androidx.core.app.ActivityCompat;
@@ -18,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MainActivity extends Activity {
-    private final static String TAG = "LitelayerDemo";
+    private final static String TAG = "LiteplayerDemo";
     private Liteplayer mLiteplayer;
     private TextView mStatusView;
     private int mStatus;
@@ -36,26 +37,26 @@ public class MainActivity extends Activity {
     private static final int LITEPLAYER_ERROR           = 0x0A;
 
     // Storage Permissions
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static final String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
+    //private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    //private static final String[] PERMISSIONS_STORAGE = {
+    //        Manifest.permission.READ_EXTERNAL_STORAGE,
+    //        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    //};
     /**
      * Checks if the app has permission to write to device storage
      * If the app does not has permission then the user will be prompted to
      * grant permissions
      */
-    private void verifyStoragePermissions(Activity activity) {
+    //private void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
+    //    int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    //    if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-        }
-    }
+    //        ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+    //    }
+    //}
 
-    private String getCacheMusicFile(String assetFile) {
+    private String getCacheMusicFromAsset(String assetFile) {
         try {
             File cacheDir = getCacheDir();
             if (!cacheDir.exists()) {
@@ -97,7 +98,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        verifyStoragePermissions(this);
+        //verifyStoragePermissions(this);
 
         mStatusView = findViewById(R.id.statusView);
         mStatusView.setText("Idle");
@@ -119,12 +120,38 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                Log.d(TAG, "Receive KEYCODE_VOLUME_UP, start/pause playing");
+                if (mStatus == LITEPLAYER_IDLE) {
+                    //String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
+                    String music = getCacheMusicFromAsset("test.m4a");
+                    mLiteplayer.setDataSource(music);
+                    mLiteplayer.prepareAsync();
+                } if (mStatus == LITEPLAYER_STARTED) {
+                    mLiteplayer.pause();
+                }
+                else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
+                    mLiteplayer.resume();
+                }
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                Log.d(TAG, "Receive KEYCODE_VOLUME_DOWN, stop playing");
+                if (mStatus != LITEPLAYER_IDLE) {
+                    mLiteplayer.reset();
+                }
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     public void onStartClick(View view) {
         if (mStatus == LITEPLAYER_IDLE) {
             //String music = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp3";
             //String music = "http://ailabsaicloudservice.alicdn.com/player/resources/23a2d715f019c0e345235f379fa26a30.mp3";
-            String music = getCacheMusicFile("test.m4a");
-
+            String music = getCacheMusicFromAsset("test.m4a");
             mLiteplayer.setDataSource(music);
             mLiteplayer.prepareAsync();
         } else if (mStatus == LITEPLAYER_PAUSED || mStatus == LITEPLAYER_SEEKCOMPLETED) {
